@@ -1,6 +1,8 @@
 # swisshydrodata
 
-swisshydrodata is a library that allow you to request data from the Swiss Federal Office for the Environment FOEN.
+swisshydrodata is a library that allow you to request data from the [Swiss Federal Office for the Environment FOEN](https://www.hydrodaten.admin.ch/en/stations-and-data.html).
+
+To find a station near to you, use the [list of stations](https://www.hydrodaten.admin.ch/en/stations-and-data.html) on the FEON website.
 
 ## Example
 ```
