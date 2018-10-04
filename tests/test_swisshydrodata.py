@@ -7,24 +7,16 @@ class TestSwissHydroData(TestCase):
 
     def setUp(self):
         self.shd = swisshydrodata.SwissHydroData()
-
-    def test_get_data(self):
-        self.assertEqual(self.shd.data,
-                         {"level": [], "temperature": [], "discharge": []})
         self.shd.load_station_data(2143)
-        self.assertNotEqual(self.shd.data,
-                            {"level": [], "temperature": [], "discharge": []})
 
     def test_latest_level(self):
-        self.shd.load_station_data(2143)
         level = self.shd.get_latest_level()
         self.assertIsInstance(level["timestamp"], datetime)
         self.assertIsInstance(level["value"], float)
         self.assertIsInstance(level["unit"], str)
-        self.assertEqual(level["unit"], "m ü.M.")
+        self.assertEqual(level["unit"], "m ü.M")
 
     def test_latest_temperature(self):
-        self.shd.load_station_data(2143)
         level = self.shd.get_latest_temperature()
         self.assertIsInstance(level["timestamp"], datetime)
         self.assertIsInstance(level["value"], float)
@@ -32,14 +24,73 @@ class TestSwissHydroData(TestCase):
         self.assertEqual(level["unit"], "°C")
 
     def test_latest_discharge(self):
-        self.shd.load_station_data(2143)
         level = self.shd.get_latest_discharge()
         self.assertIsInstance(level["timestamp"], datetime)
         self.assertIsInstance(level["value"], float)
         self.assertIsInstance(level["unit"], str)
         self.assertEqual(level["unit"], "m3/s")
 
-    def test_not_measured_values(self):
+    def test_min_level(self):
+        level = self.shd.get_min_level()
+        self.assertIsInstance(level["timestamp"], datetime)
+        self.assertIsInstance(level["value"], float)
+        self.assertIsInstance(level["unit"], str)
+        self.assertEqual(level["unit"], "m ü.M")
+
+    def test_min_temperature(self):
+        level = self.shd.get_min_temperature()
+        self.assertIsInstance(level["timestamp"], datetime)
+        self.assertIsInstance(level["value"], float)
+        self.assertIsInstance(level["unit"], str)
+        self.assertEqual(level["unit"], "°C")
+
+    def test_min_discharge(self):
+        level = self.shd.get_min_discharge()
+        self.assertIsInstance(level["timestamp"], datetime)
+        self.assertIsInstance(level["value"], float)
+        self.assertIsInstance(level["unit"], str)
+        self.assertEqual(level["unit"], "m3/s")
+
+    def test_max_level(self):
+        level = self.shd.get_max_level()
+        self.assertIsInstance(level["timestamp"], datetime)
+        self.assertIsInstance(level["value"], float)
+        self.assertIsInstance(level["unit"], str)
+        self.assertEqual(level["unit"], "m ü.M")
+
+    def test_max_temperature(self):
+        level = self.shd.get_max_temperature()
+        self.assertIsInstance(level["timestamp"], datetime)
+        self.assertIsInstance(level["value"], float)
+        self.assertIsInstance(level["unit"], str)
+        self.assertEqual(level["unit"], "°C")
+
+    def test_max_discharge(self):
+        level = self.shd.get_max_discharge()
+        self.assertIsInstance(level["timestamp"], datetime)
+        self.assertIsInstance(level["value"], float)
+        self.assertIsInstance(level["unit"], str)
+        self.assertEqual(level["unit"], "m3/s")
+
+    def test_mean_level(self):
+        level = self.shd.get_mean_level()
+        self.assertIsInstance(level["value"], float)
+        self.assertIsInstance(level["unit"], str)
+        self.assertEqual(level["unit"], "m ü.M")
+
+    def test_mean_temperature(self):
+        level = self.shd.get_mean_temperature()
+        self.assertIsInstance(level["value"], float)
+        self.assertIsInstance(level["unit"], str)
+        self.assertEqual(level["unit"], "°C")
+
+    def test_mean_discharge(self):
+        level = self.shd.get_mean_discharge()
+        self.assertIsInstance(level["value"], float)
+        self.assertIsInstance(level["unit"], str)
+        self.assertEqual(level["unit"], "m3/s")
+
+    def test_missing_values(self):
         self.shd.load_station_data(2392)
-        level = self.shd.get_latest_discharge()
-        self.assertIsNone(level)
+        self.assertIsNone(self.shd.get_mean_discharge())
+

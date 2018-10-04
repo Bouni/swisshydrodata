@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="swisshydrodata",
-    version="0.0.1",
+    version="0.0.2",
     author="Bouni",
     author_email="bouni@owee.de",
     description="A library to fetch data from the Swiss federal Office for Environment FEON",
