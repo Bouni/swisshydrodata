@@ -5,7 +5,7 @@ SwissHydroData enables you to fetch data
 from the Federal Office for the Environment FOEN
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import requests
 
 
@@ -16,131 +16,383 @@ class SwissHydroData:
     """
 
     def __init__(self):
-        self.base_url = 'https://www.hydrodaten.admin.ch'
-        self.values = {
-            "level": "m ü.M",
-            "temperature": "°C",
-            "discharge": "m3/s"
-        }
-        self.data = {}
+        self.base_url = 'https://swisshydroapi.bouni.de/api/v1'
 
-    def load_station_data(self, station_id=None):
-        """
-        load the data for a station indicated by
-        its station id
-        """
-        if not station_id:
-            raise Exception("missing station id")
-        if not isinstance(station_id, int):
-            raise Exception("invalid station id")
-        self.data = {}
-        data = {}
-        for value in self.values.keys():
-            res = requests.get(
-                "{0}/graphs/{1}/{2}_{1}.csv".format(
-                    self.base_url,
-                    station_id,
-                    value,
-                )
-            )
-            if res.status_code == 200:
-                # get csv data, split and fix timestamp format
-                lines = [
-                    (y[0][:-3]+y[0][-2:], y[1]) for y in
-                    [x.split(',') for x in res.text.split('\n') if x]]
-                # get rid of header line
-                lines.pop(0)
-                # parse data
-                data[value] = [
-                    {"timestamp": datetime.strptime(y[0], "%Y-%m-%dT%H:%M:%S%z"),
-                     "value": float(y[1]),
-                     } for y in lines
-                ]
-                # order by timestamp
-                data[value] = sorted(
-                    data[value],
-                    key=lambda k: k['timestamp'],
-                    reverse=True
-                )
-        if not data:
-            raise Exception("no data for given station id")
-        self._analyze_data(data)
+    def get_stations(self):
+        """ Return a list of all stations IDs """
+        request = requests.get("{}/stations".format(
+            self.base_url))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def _analyze_data(self, data):
-        for value, unit in self.values.items():
-            if value in data:
-                self.data[value] = {
-                    "unit": unit,
-                    "min": {},
-                    "max": {},
-                    "mean": 0
-                }
-                self.data[value]["latest"] = data[value][0]
-                latest = data[value][0]["timestamp"]
-                first = latest - timedelta(days=1)
-                count = 0
-                for entry in data[value]:
-                    if entry["timestamp"] >= first:
-                        count += 1
-                        if "value" not in self.data[value]["min"] or \
-                           self.data[value]["min"]["value"] > entry["value"]:
-                            self.data[value]["min"] = entry
-                        if "value" not in self.data[value]["max"] or \
-                           self.data[value]["max"]["value"] < entry["value"]:
-                            self.data[value]["max"] = entry
-                        self.data[value]["mean"] += entry["value"]
-                self.data[value]["latest"]["unit"] = unit
-                self.data[value]["min"]["unit"] = unit
-                self.data[value]["max"]["unit"] = unit
-                self.data[value]["mean"] = {
-                    "value": self.data[value]["mean"] / count,
-                    "unit": unit
-                }
+    def get_station(self, station_id):
+        """ Return all data for a given station """
+        request = requests.get("{}/station/{}".format(
+            self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def get_latest_level(self):
-        """ returns the latest water level measurement """
-        return self.data.get("level", {}).get("latest")
+    def get_station_name(self, station_id):
+        """ Return name for a given station """
+        request = requests.get("{}/station/{}/name".format(
+            self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def get_max_level(self):
-        """ returns the maximum water level in the last 24h """
-        return self.data.get("level", {}).get("max")
+    def get_station_water_body_name(self, station_id):
+        """ Return water body name for a given station """
+        request = requests.get("{}/station/{}/water-body-name".format(
+            self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def get_min_level(self):
-        """ returns the minimum water level in the last 24h """
-        return self.data.get("level", {}).get("min")
+    def get_station_water_body_type(self, station_id):
+        """ Return water body type for a given station """
+        request = requests.get("{}/station/{}/water-body-type".format(
+            self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def get_mean_level(self):
-        """ returns the mean water level in the last 24h """
-        return self.data.get("level", {}).get("mean")
+    def get_station_coordinates(self, station_id):
+        """ Return WSG84 coordinates for a given station """
+        request = requests.get("{}/station/{}/coordinates".format(
+            self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def get_latest_temperature(self):
-        """ returns the latest water temperature measurement """
-        return self.data.get("temperature", {}).get("latest")
+    def get_station_parameters(self, station_id):
+        """ Return measurement data for a given station """
+        request = requests.get("{}/station/{}/parameters".format(
+            self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def get_max_temperature(self):
-        """ returns the maximum water temperature in the last 24h """
-        return self.data.get("temperature", {}).get("max")
+    def get_station_temperature(self, station_id):
+        """ Return temperature data for a given station """
+        request = requests.get("{}/station/{}/parameters/temperature".format(
+            self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def get_min_temperature(self):
-        """ returns the minimum water temperature in the last 24h """
-        return self.data.get("temperature", {}).get("min")
+    def get_station_temperature_unit(self, station_id):
+        """ Return temperature unit for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/temperature/unit".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def get_mean_temperature(self):
-        """ returns the mean water temperature in the last 24h """
-        return self.data.get("temperature", {}).get("mean")
+    def get_station_temperature_datetime(self, station_id):
+        """ Return temperature measurement datetime for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/temperature/datetime".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return datetime.strptime(request.json(), "%Y-%m-%dT%H:%M:%S")
 
-    def get_latest_discharge(self):
-        """ returns the latest water discharge measurement """
-        return self.data.get("discharge", {}).get("latest")
+    def get_station_temperature_value(self, station_id):
+        """ Return temperature value for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/temperature/value".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def get_max_discharge(self):
-        """ returns the maximum water discharge in the last 24h """
-        return self.data.get("discharge", {}).get("max")
+    def get_station_temperature_previous24h(self, station_id):
+        """ Return temperature value 24h ago for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/temperature/previous24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def get_min_discharge(self):
-        """ returns the minimum water discharge in the last 24h """
-        return self.data.get("discharge", {}).get("min")
+    def get_station_temperature_delta24h(self, station_id):
+        """ Return temperature delta of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/temperature/delta24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
 
-    def get_mean_discharge(self):
-        """ returns the mean water discharge in the last 24h """
-        return self.data.get("discharge", {}).get("mean")
+    def get_station_temperature_max24h(self, station_id):
+        """ Return temperature maximum of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/temperature/max24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_temperature_mean24h(self, station_id):
+        """ Return temperature mean of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/temperature/mean24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_temperature_min24h(self, station_id):
+        """ Return temperature minimum of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/temperature/min24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_temperature_max1h(self, station_id):
+        """ Return temperature maximum of the last hour for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/temperature/max1h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_temperature_mean1h(self, station_id):
+        """ Return temperature mean of the last hour for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/temperature/mean1h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_temperature_min1h(self, station_id):
+        """ Return temperature minimum of the last hour for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/temperature/min1h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_level(self, station_id):
+        """ Return water level measurement for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_level_unit(self, station_id):
+        """ Return water level unit for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level/unit".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_level_datetime(self, station_id):
+        """ Return water level measurement datetime for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level/datetime".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return datetime.strptime(request.json(), "%Y-%m-%dT%H:%M:%S")
+
+    def get_station_level_value(self, station_id):
+        """ Return water level value for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level/value".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_level_previous24h(self, station_id):
+        """ Return water level 24h ago for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level/previous24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_level_delta24h(self, station_id):
+        """ Return water level delta of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level/delta24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_level_max24h(self, station_id):
+        """ Return water level maximum of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level/max24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_level_mean24h(self, station_id):
+        """ Return water level mean of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level/mean24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_level_min24h(self, station_id):
+        """ Return water level minimum of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level/min24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_level_max1h(self, station_id):
+        """ Return water level maximum of the last hour for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level/max1h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_level_mean1h(self, station_id):
+        """ Return water level mean of the last hour for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level/mean1h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_level_min1h(self, station_id):
+        """ Return water level minimum of the last hour for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/level/min1h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_discharge(self, station_id):
+        """ Return discharge measurement for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_discharge_unit(self, station_id):
+        """ Return discharge unit for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge/unit".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_discharge_datetime(self, station_id):
+        """ Return discharge measurement datetime for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge/datetime".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return datetime.strptime(request.json(), "%Y-%m-%dT%H:%M:%S")
+
+    def get_station_discharge_value(self, station_id):
+        """ Return discharge value for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge/value".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_discharge_previous24h(self, station_id):
+        """ Return discharge 24h ago for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge/previous24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_discharge_delta24h(self, station_id):
+        """ Return discharge delta of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge/delta24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_discharge_max24h(self, station_id):
+        """ Return discharge maximum of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge/max24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_discharge_mean24h(self, station_id):
+        """ Return discharge mean of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge/mean24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_discharge_min24h(self, station_id):
+        """ Return discharge minimum of the last 24h for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge/min24h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_discharge_max1h(self, station_id):
+        """ Return discharge maximum of the last hour for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge/max1h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_discharge_mean1h(self, station_id):
+        """ Return discharge mean of the last hour for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge/mean1h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
+
+    def get_station_discharge_min1h(self, station_id):
+        """ Return discharge minimum of the last hour for a given station """
+        request = requests.get(
+            "{}/station/{}/parameters/discharge/min1h".format(
+                self.base_url, station_id))
+        if request.status_code != 200:
+            return None
+        return request.json()
