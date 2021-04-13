@@ -9,6 +9,7 @@ setuptools.setup(
     author="Bouni",
     author_email="bouni@owee.de",
     description="A library to fetch data from the Swiss federal Office for Environment FEON",
+    license="MIT",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/bouni/swisshydrodata",
