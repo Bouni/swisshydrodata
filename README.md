@@ -1,11 +1,15 @@
 # swisshydrodata
 
-swisshydrodata is a library that allow you to get data from the [Swiss Federal Office for the Environment FOEN](https://www.hydrodaten.admin.ch/en/).
-To find a station near to you, use the [list of stations](https://www.hydrodaten.admin.ch/en/messstationen-vorhersage) on the FEON website.
+swisshydrodata is a library that allow you to get data from the
+[Swiss Federal Office for the Environment FOEN](https://www.hydrodaten.admin.ch/en/).
+To find a station near to you, use the 
+[list of stations](https://www.hydrodaten.admin.ch/en/messstationen-vorhersage) on the FEON website.
 
-The library uses a REST API which hands out the data because the FEON does not allow to use their data service as backend.
+The library uses a REST API which hands out the data because the FEON
+does not allow to use their data service as backend.
 
-The data update interval is limited to onece every 10 minutes by FEON, so thats how often the API has new data available.
+The data update interval is limited to onece every 10 minutes by FEON,
+so thats how often the API has new data available.
 
 ## Example
 
