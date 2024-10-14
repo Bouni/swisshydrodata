@@ -16,7 +16,7 @@ jobs:
       with:
         python-version: "3.12"
     - name: Install pytest
-      run: pip install pytest pytest-cov
+      run: pip install pytest pytest-cov requests requests-mock
     - name: Run pytest
       run: |
         set -o pipefail
