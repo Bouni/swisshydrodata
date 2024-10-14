@@ -1,6 +1,6 @@
 ---
 name: PR coverage comment
-on: # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
   workflow_run:
     workflows: ["Run unit tests"]
     types:
@@ -13,7 +13,7 @@ jobs:
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion == 'success'
     steps:
-      - name: 'Download artifact'
+      - name: "Download artifact"
         uses: actions/github-script@v7
         # yamllint disable rule:line-length
         with:
@@ -48,4 +48,3 @@ jobs:
           issue-number: ${{ steps.pr_number.outputs.content }}
           pytest-coverage-path: ./pytest-coverage.txt
           junitxml-path: ./pytest.xml
-

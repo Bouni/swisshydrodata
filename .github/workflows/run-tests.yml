@@ -1,7 +1,8 @@
+---
 name: Run unit tests
-on:
+on:  # yamllint disable-line rule:truthy
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -9,25 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: Set up Python 
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
-    - name: Install pytest
-      run: pip install pytest pytest-cov requests requests-mock
-    - name: Run pytest
-      run: |
-        set -o pipefail
-        PYTHONPATH=. pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=swisshydroapi tests/ | tee pytest-coverage.txt
-    - name: Save PR number and coverage results
-      run: |
-        mkdir -p ./pr
-        echo ${{ github.event.number }} > ./pr/PR-number.txt
-        cp ./pytest-coverage.txt ./pr/pytest-coverage.txt
-        cp ./pytest.xml ./pr/pytest.xml
-    - uses: actions/upload-artifact@v4
-      with:
-        name: pr
-        path: pr/
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pytest
+        run: pip install pytest pytest-cov requests requests-mock
+      - name: Run pytest
+        run: |
+          set -o pipefail
+          PYTHONPATH=. pytest\
+          --junitxml=pytest.xml\
+          --cov-report=term-missing:skip-covered\
+          --cov=swisshydroapi\
+          tests/ | tee pytest-coverage.txt
+      - name: Save PR number and coverage results
+        run: |
+          mkdir -p ./pr
+          echo ${{ github.event.number }} > ./pr/PR-number.txt
+          cp ./pytest-coverage.txt ./pr/pytest-coverage.txt
+          cp ./pytest.xml ./pr/pytest.xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pr
+          path: pr/
