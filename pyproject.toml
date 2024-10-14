@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "swisshydrodata"
-version = "0.2.0"
+version = "0.2.0",
 description = "A library to fetch data from the Swiss federal Office for Environment FEON"
 authors = [{ name = "bouni", email = "bouni-github@owee.de" }]
 readme = "README.md"
