@@ -21,11 +21,7 @@ jobs:
       - name: Run pytest
         run: |
           set -o pipefail
-          PYTHONPATH=. pytest\
-          --junitxml=pytest.xml\
-          --cov-report=term-missing:skip-covered\
-          --cov=swisshydroapi\
-          tests/ | tee pytest-coverage.txt
+          PYTHONPATH=. pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=swisshydroapi tests/ | tee pytest-coverage.txt
       - name: Save PR number and coverage results
         run: |
           mkdir -p ./pr
