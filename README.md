@@ -2,8 +2,9 @@
 
 swisshydrodata is a library that allow you to get data from the
 [Swiss Federal Office for the Environment FOEN](https://www.hydrodaten.admin.ch/en/).
-To find a station near to you, use the 
-[list of stations](https://www.hydrodaten.admin.ch/en/messstationen-vorhersage) on the FEON website.
+To find a station near to you, use the
+[list of stations](https://www.hydrodaten.admin.ch/en/messstationen-vorhersage)
+on the FEON website.
 
 The library uses a REST API which hands out the data because the FEON
 does not allow to use their data service as backend.
@@ -14,7 +15,7 @@ so thats how often the API has new data available.
 ## Example
 
 ```python
-from swisshydrodata import SwissHydroData 
+from swisshydrodata import SwissHydroData
 
 s = SwissHydroData()
 
