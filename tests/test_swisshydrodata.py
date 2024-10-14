@@ -1,4 +1,6 @@
-import swisshydrodata
+from swisshydrodata import SwissHydroData
+import pytest
+import requests
 
 
 def test_stations(requests_mock):
@@ -21,7 +23,7 @@ def test_stations(requests_mock):
         json=mock_data,
         status_code=200,
     )
-    SHD = swisshydrodata.SwissHydroData()
+    SHD = SwissHydroData()
     r = SHD.get_stations()
     assert r == mock_data
     assert requests_mock.called
@@ -32,7 +34,7 @@ def test_stations_fail(requests_mock):
         "https://swisshydroapi.bouni.de/api/v1/stations",
         status_code=500,
     )
-    SHD = swisshydrodata.SwissHydroData()
+    SHD = SwissHydroData()
     r = SHD.get_stations()
     assert r == None
     assert requests_mock.called
@@ -68,7 +70,7 @@ def test_station(requests_mock):
         json=mock_data,
         status_code=200,
     )
-    SHD = swisshydrodata.SwissHydroData()
+    SHD = SwissHydroData()
     r = SHD.get_station(2143)
     assert r == mock_data
     assert requests_mock.called
@@ -79,8 +81,7 @@ def test_station_fail(requests_mock):
         "https://swisshydroapi.bouni.de/api/v1/station/2143",
         status_code=500,
     )
-    SHD = swisshydrodata.SwissHydroData()
+    SHD = SwissHydroData()
     r = SHD.get_station(2143)
     assert r == None
     assert requests_mock.called
-
