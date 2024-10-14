@@ -1,6 +1,4 @@
 from swisshydrodata import SwissHydroData
-import pytest
-import requests
 
 
 def test_stations(requests_mock):
@@ -36,7 +34,7 @@ def test_stations_fail(requests_mock):
     )
     SHD = SwissHydroData()
     r = SHD.get_stations()
-    assert r == None
+    assert r is None
     assert requests_mock.called
 
 
@@ -83,5 +81,5 @@ def test_station_fail(requests_mock):
     )
     SHD = SwissHydroData()
     r = SHD.get_station(2143)
-    assert r == None
+    assert r is None
     assert requests_mock.called
