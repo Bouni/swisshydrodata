@@ -8,7 +8,8 @@ The library uses a REST API which hands out the data because the FEON does not a
 The data update interval is limited to onece every 10 minutes by FEON, so thats how often the API has new data available.
 
 ## Example
-```
+
+```python
 from swisshydrodata import SwissHydroData 
 
 s = SwissHydroData()
