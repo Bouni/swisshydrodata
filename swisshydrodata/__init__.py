@@ -15,7 +15,7 @@ class SwissHydroData:
 
     def get_stations(self):
         """Return a list of all stations IDs"""
-        request = requests.get("{}/stations".format(self.base_url))
+        request = requests.get("{}/stations".format(self.base_url), timeout=5)
         if request.status_code != 200:
             logger.error(
                 f"Request for list of stations failed with status code {request.status_code}"
@@ -25,7 +25,7 @@ class SwissHydroData:
 
     def get_station(self, station_id):
         """Return all data for a given station"""
-        request = requests.get("{}/station/{}".format(self.base_url, station_id))
+        request = requests.get("{}/station/{}".format(self.base_url, station_id), timeout=5)
         if request.status_code != 200:
             logger.error(
                 f"Request for station {station_id} failed with status code {request.status_code}"
