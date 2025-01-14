@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-python@v5
 
       - name: Install yamllint
-        run: uv pip install --user yamllint
+        run: uv pip install yamllint
       - name: Run yamllint
         run: yamllint -d relaxed .
 
