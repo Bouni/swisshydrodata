@@ -15,14 +15,21 @@ so thats how often the API has new data available.
 ## Example
 
 ```python
+import aiohttp
+import asyncio
 from swisshydrodata import SwissHydroData
 
-s = SwissHydroData()
 
-# returns a list of station numbers
-s.get_stations()
+async def main():
+    async with aiohttp.ClientSession() as session:
+        shd = SwissHydroData(session)
+        # returns a list of station numbers
+        data = await shd.async_get_stations()
+        print(data)
 
-# returns all data available for station #2143
-s.get_station(2143)
+        # returns all data available for station #2143
+        data = await shd.async_get_station(2143)
+        print(data)
 
+asyncio.run(main())
 ```
