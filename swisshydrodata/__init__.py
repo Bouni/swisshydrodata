@@ -1,7 +1,22 @@
-import requests
+import asyncio
 import logging
 
-logger = logging.getLogger(__name__)
+import aiohttp
+
+_LOGGER = logging.getLogger(__name__)
+_BASE_URL = "https://swisshydroapi.bouni.de/api/v1"
+
+
+class SwissHydroApiError(Exception):
+    """General SwissHydroApiError exception occurred."""
+
+    pass
+
+
+class SwissHydroApiConnectionError(SwissHydroApiError):
+    """When a connection error is encountered."""
+
+    pass
 
 
 class SwissHydroData:
@@ -10,25 +25,45 @@ class SwissHydroData:
     the Federal Office for the Environment FOEN
     """
 
-    def __init__(self):
-        self.base_url = "https://swisshydroapi.bouni.de/api/v1"
+    def __init__(self, session):
+        self._session = session
 
-    def get_stations(self):
+    async def async_get_stations(self) -> list | None:
         """Return a list of all stations IDs"""
-        request = requests.get("{}/stations".format(self.base_url), timeout=5)
-        if request.status_code != 200:
-            logger.error(
-                f"Request for list of stations failed with status code {request.status_code}"
+        try:
+            response = await self._session.get(
+                f"{_BASE_URL}/stations", raise_for_status=True
             )
-            return None
-        return request.json()
 
-    def get_station(self, station_id):
-        """Return all data for a given station"""
-        request = requests.get("{}/station/{}".format(self.base_url, station_id), timeout=5)
-        if request.status_code != 200:
-            logger.error(
-                f"Request for station {station_id} failed with status code {request.status_code}"
+            _LOGGER.debug("Response from sysisshydroapi.bouni.de: %s", response.status)
+            data = await response.json()
+            _LOGGER.debug(data)
+        except asyncio.TimeoutError as e:
+            _LOGGER.error("Can not load data from sysisshydroapi.bouni.de")
+            raise SwissHydroApiConnectionError() from e
+        except aiohttp.ClientError as aiohttpClientError:
+            _LOGGER.error(
+                "Response from sysisshydroapi.bouni.de: %s", aiohttpClientError
             )
-            return None
-        return request.json()
+            raise SwissHydroApiConnectionError() from aiohttpClientError
+        return data
+
+    async def async_get_station(self, station_id: int | str):
+        """Return all data for a given station"""
+        try:
+            response = await self._session.get(
+                f"{_BASE_URL}/station/{station_id}", raise_for_status=True
+            )
+
+            _LOGGER.debug("Response from sysisshydroapi.bouni.de: %s", response.status)
+            data = await response.json()
+            _LOGGER.debug(data)
+        except asyncio.TimeoutError as e:
+            _LOGGER.error("Can not load data from sysisshydroapi.bouni.de")
+            raise SwissHydroApiConnectionError() from e
+        except aiohttp.ClientError as aiohttpClientError:
+            _LOGGER.error(
+                "Response from sysisshydroapi.bouni.de: %s", aiohttpClientError
+            )
+            raise SwissHydroApiConnectionError() from aiohttpClientError
+        return data
