@@ -1,7 +1,13 @@
-from swisshydrodata import SwissHydroData
+import asyncio
+from unittest.mock import AsyncMock, MagicMock
+
+import aiohttp
+import pytest
+from swisshydrodata import _BASE_URL, SwissHydroApiConnectionError, SwissHydroData
 
 
-def test_stations(requests_mock):
+@pytest.mark.asyncio
+async def test_async_get_stations_success():
     mock_data = [
         {
             "id": "2232",
@@ -16,29 +22,48 @@ def test_stations(requests_mock):
             "water-body-type": "river",
         },
     ]
-    requests_mock.get(
-        "https://swisshydroapi.bouni.de/api/v1/stations",
-        json=mock_data,
-        status_code=200,
+
+    mock_session = MagicMock()
+    mock_response = AsyncMock()
+    mock_response.json = AsyncMock(return_value=mock_data)
+    mock_response.status = 200
+    mock_session.get = AsyncMock(return_value=mock_response)
+
+    hydro_data = SwissHydroData(session=mock_session)
+    stations = await hydro_data.async_get_stations()
+
+    mock_session.get.assert_called_once_with(
+        f"{_BASE_URL}/stations", raise_for_status=True
     )
-    SHD = SwissHydroData()
-    r = SHD.get_stations()
-    assert r == mock_data
-    assert requests_mock.called
+    assert stations == mock_data
 
 
-def test_stations_fail(requests_mock):
-    requests_mock.get(
-        "https://swisshydroapi.bouni.de/api/v1/stations",
-        status_code=500,
+@pytest.mark.asyncio
+async def test_async_get_stations_timeout_error():
+    mock_session = MagicMock()
+    mock_session.get = AsyncMock(side_effect=asyncio.TimeoutError)
+
+    hydro_data = SwissHydroData(session=mock_session)
+
+    with pytest.raises(SwissHydroApiConnectionError):
+        await hydro_data.async_get_stations()
+
+
+@pytest.mark.asyncio
+async def test_async_get_stations_client_error():
+    mock_session = MagicMock()
+    mock_session.get = AsyncMock(
+        side_effect=aiohttp.ClientError("Client error occurred")
     )
-    SHD = SwissHydroData()
-    r = SHD.get_stations()
-    assert r is None
-    assert requests_mock.called
+
+    hydro_data = SwissHydroData(session=mock_session)
+
+    with pytest.raises(SwissHydroApiConnectionError):
+        await hydro_data.async_get_stations()
 
 
-def test_station(requests_mock):
+@pytest.mark.asyncio
+async def test_async_get_station_success():
     mock_data = {
         "name": "Rekingen",
         "water-body-name": "Rhein",
@@ -63,23 +88,41 @@ def test_station(requests_mock):
             },
         },
     }
-    requests_mock.get(
-        "https://swisshydroapi.bouni.de/api/v1/station/2143",
-        json=mock_data,
-        status_code=200,
+
+    mock_session = MagicMock()
+    mock_response = AsyncMock()
+    mock_response.json = AsyncMock(return_value=mock_data)
+    mock_response.status = 200
+    mock_session.get = AsyncMock(return_value=mock_response)
+
+    hydro_data = SwissHydroData(session=mock_session)
+    stations = await hydro_data.async_get_station(2143)
+
+    mock_session.get.assert_called_once_with(
+        f"{_BASE_URL}/station/2143", raise_for_status=True
     )
-    SHD = SwissHydroData()
-    r = SHD.get_station(2143)
-    assert r == mock_data
-    assert requests_mock.called
+    assert stations == mock_data
 
 
-def test_station_fail(requests_mock):
-    requests_mock.get(
-        "https://swisshydroapi.bouni.de/api/v1/station/2143",
-        status_code=500,
+@pytest.mark.asyncio
+async def test_async_get_station_timeout_error():
+    mock_session = MagicMock()
+    mock_session.get = AsyncMock(side_effect=asyncio.TimeoutError)
+
+    hydro_data = SwissHydroData(session=mock_session)
+
+    with pytest.raises(SwissHydroApiConnectionError):
+        await hydro_data.async_get_station(2143)
+
+
+@pytest.mark.asyncio
+async def test_async_get_station_client_error():
+    mock_session = MagicMock()
+    mock_session.get = AsyncMock(
+        side_effect=aiohttp.ClientError("Client error occurred")
     )
-    SHD = SwissHydroData()
-    r = SHD.get_station(2143)
-    assert r is None
-    assert requests_mock.called
+
+    hydro_data = SwissHydroData(session=mock_session)
+
+    with pytest.raises(SwissHydroApiConnectionError):
+        await hydro_data.async_get_station(2413)
